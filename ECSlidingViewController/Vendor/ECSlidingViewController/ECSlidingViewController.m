@@ -339,7 +339,7 @@ NSString *const ECSlidingViewTopDidReset             = @"ECSlidingViewTopDidRese
     
     [self topViewHorizontalCenterWillChange:newCenter];
     
-    [UIView animateWithDuration:0.25f animations:^{
+    [UIView animateWithDuration:[self getAnimationTime:YES] animations:^{
         if (animations) {
             animations();
         }
@@ -425,7 +425,7 @@ NSString *const ECSlidingViewTopDidReset             = @"ECSlidingViewTopDidRese
 {
     [self topViewHorizontalCenterWillChange:self.resettedCenter];
     
-    [UIView animateWithDuration:0.25f animations:^{
+    [UIView animateWithDuration:[self getAnimationTime:NO] animations:^{
         if (animations) {
             animations();
         }
@@ -438,6 +438,30 @@ NSString *const ECSlidingViewTopDidReset             = @"ECSlidingViewTopDidRese
         UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, self.topView);
         [self topViewHorizontalCenterDidChange:self.resettedCenter];
     }];
+}
+
+- (CGFloat)getAnimationTime:(BOOL)isOpen
+{
+    CGFloat animationTime = 0.25f;
+    CGFloat recentX = self.topView.frame.origin.x;
+    CGFloat revealAmount;
+    // left
+    if (recentX <= 0) {
+        revealAmount = self.anchorLeftRevealAmount;
+        // right
+    } else {
+        revealAmount = self.anchorRightRevealAmount;
+    }
+    
+    if (isOpen) {
+        animationTime = ((revealAmount - abs(recentX))/revealAmount) * animationTime;
+    } else {
+        animationTime = (abs(recentX)/revealAmount) * animationTime;
+    }
+    
+    NSLog(@"animation time - %f", animationTime);
+    
+    return animationTime;
 }
 
 - (NSUInteger)autoResizeToFillScreen
